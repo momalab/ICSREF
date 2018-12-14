@@ -1,0 +1,295 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>module_exp_pid_match &mdash; ICSREF v0.0.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> ICSREF
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Documentation:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../icsrefPrompt.html">icsrefPrompt</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PRG_analysis.html">PRG_analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Modules.html">Modules</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">ICSREF</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="index.html">Module code</a> &raquo;</li>
+        
+      <li>module_exp_pid_match</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for module_exp_pid_match</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python</span>
+
+<span class="n">__author__</span> <span class="o">=</span> <span class="s1">&#39;Tasos Keliris&#39;</span>
+
+<span class="kn">import</span> <span class="nn">ujson</span>
+
+<div class="viewcode-block" id="exp_pid_match"><a class="viewcode-back" href="../Modules.html#module_exp_pid_match.exp_pid_match">[docs]</a><span class="k">def</span> <span class="nf">exp_pid_match</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">args</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Experimentally match PID functions. Signatures-based detection where </span>
+<span class="sd">    a binary is expected to contain specific constant values and have</span>
+<span class="sd">    specific connections. See source code for more details.</span>
+
+<span class="sd">    No args</span>
+
+<span class="sd">    :Example:</span>
+<span class="sd">    </span>
+<span class="sd">        reversing\@icsref:$ exp_pid_match</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">prg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prg</span>
+    <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Error: You need to first load or analyze a program&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="mi">0</span>
+
+    <span class="c1"># Occurrences of 1000.0</span>
+    <span class="n">id1000</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\x00\x00\x7A\x44</span><span class="s1">&#39;</span>
+    <span class="n">oc1000</span> <span class="o">=</span> <span class="n">prg</span><span class="o">.</span><span class="n">_Program__allindices</span><span class="p">(</span><span class="n">prg</span><span class="o">.</span><span class="n">hexdump</span><span class="p">,</span> <span class="n">id1000</span><span class="p">)</span>
+    <span class="c1"># Occurrences of 3.0</span>
+    <span class="n">id3</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\x00\x00\x40\x40</span><span class="s1">&#39;</span>
+    <span class="n">oc3</span> <span class="o">=</span> <span class="n">prg</span><span class="o">.</span><span class="n">_Program__allindices</span><span class="p">(</span><span class="n">prg</span><span class="o">.</span><span class="n">hexdump</span><span class="p">,</span> <span class="n">id3</span><span class="p">)</span>
+    <span class="c1"># Occurrences of 1E38</span>
+    <span class="n">id1E38</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\x99\x76\x96\x7E</span><span class="s1">&#39;</span>
+    <span class="n">oc1E38</span> <span class="o">=</span> <span class="n">prg</span><span class="o">.</span><span class="n">_Program__allindices</span><span class="p">(</span><span class="n">prg</span><span class="o">.</span><span class="n">hexdump</span><span class="p">,</span> <span class="n">id1E38</span><span class="p">)</span>
+    <span class="c1"># Occurrences of -1E38</span>
+    <span class="n">idnot1E38</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\x99\x76\x96\xFE</span><span class="s1">&#39;</span>
+    <span class="n">ocnot1E38</span> <span class="o">=</span> <span class="n">prg</span><span class="o">.</span><span class="n">_Program__allindices</span><span class="p">(</span><span class="n">prg</span><span class="o">.</span><span class="n">hexdump</span><span class="p">,</span> <span class="n">idnot1E38</span><span class="p">)</span>
+    <span class="c1"># Occurrences of 1E38</span>
+    <span class="n">id1E30</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\xCA\xF2\x49\x71</span><span class="s1">&#39;</span>
+    <span class="n">oc1E30</span> <span class="o">=</span> <span class="n">prg</span><span class="o">.</span><span class="n">_Program__allindices</span><span class="p">(</span><span class="n">prg</span><span class="o">.</span><span class="n">hexdump</span><span class="p">,</span> <span class="n">id1E30</span><span class="p">)</span>
+    <span class="c1"># Occurrences of -1E38</span>
+    <span class="n">idnot1E30</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\xCA\xF2\x49\xF1</span><span class="s1">&#39;</span>
+    <span class="n">ocnot1E30</span> <span class="o">=</span> <span class="n">prg</span><span class="o">.</span><span class="n">_Program__allindices</span><span class="p">(</span><span class="n">prg</span><span class="o">.</span><span class="n">hexdump</span><span class="p">,</span> <span class="n">idnot1E30</span><span class="p">)</span>
+
+    <span class="c1"># Check if minimum occurrence of constants exists in hexdump, otherwise return</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">id1000</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">2</span> <span class="ow">and</span> <span class="n">id3</span> <span class="ow">and</span> <span class="n">id1E38</span> <span class="ow">and</span> <span class="n">idnot1E38</span> <span class="ow">and</span> <span class="n">id1E30</span> <span class="ow">and</span> <span class="n">idnot1E30</span><span class="p">):</span>
+        <span class="k">return</span> <span class="mi">0</span>
+    
+    <span class="c1"># Search for matches of BOTH main and init</span>
+    <span class="k">for</span> <span class="n">func_index</span><span class="p">,</span> <span class="n">func</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">prg</span><span class="o">.</span><span class="n">Functions</span><span class="p">[:</span><span class="o">-</span><span class="mi">2</span><span class="p">]):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        DERIVATIVE:     3       (0x40400000)</span>
+<span class="sd">                        1000    (0x447A0000)</span>
+<span class="sd">        INTEGRAL:       1E38    (0x7E967699)</span>
+<span class="sd">                        -1E38   (0xFE967699)</span>
+<span class="sd">                        1000    (0x447A0000)</span>
+<span class="sd">        PD:             </span>
+<span class="sd">        PID:            1E30    (0x7149F2CA)</span>
+<span class="sd">                        -1E30   (0xF149F2CA)</span>
+<span class="sd">                        1000    (0x447A0000)</span>
+<span class="sd">        PID_FIXCYCLE:   1E30    (0x7149F2CA)</span>
+<span class="sd">                        -1E30   (0xF149F2CA)</span>
+<span class="sd">                        1000    (0x447A0000)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="c1"># Initialize indices of possible locations</span>
+        <span class="n">maybe_PID</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="n">maybe_INTEGRAL</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="n">maybe_DERIVATIVE</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+
+        <span class="c1"># Check if it could be a PID function</span>
+        <span class="c1"># if (id1E30 in func.hexdump) and (idnot1E30 in func.hexdump) and (id1000 in func.hexdump) and &#39;PID&#39; not in func.name:</span>
+        <span class="k">if</span> <span class="s1">&#39;PID&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">func</span><span class="o">.</span><span class="n">name</span><span class="p">:</span>
+            <span class="n">maybe_PID</span> <span class="o">=</span> <span class="n">func_index</span>
+            <span class="k">for</span> <span class="n">call</span> <span class="ow">in</span> <span class="nb">set</span><span class="p">(</span><span class="n">func</span><span class="o">.</span><span class="n">calls</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">call</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">prg</span><span class="o">.</span><span class="n">dynlibs_dict</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+                    <span class="n">callindex</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prg</span><span class="o">.</span><span class="n">Functions</span><span class="p">)</span> <span class="k">if</span> <span class="n">j</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">call</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="n">callindex</span><span class="p">:</span>
+                        <span class="n">callindex</span> <span class="o">=</span> <span class="n">callindex</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                        <span class="n">callfunc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prg</span><span class="o">.</span><span class="n">Functions</span><span class="p">[</span><span class="n">callindex</span><span class="p">]</span>
+                        <span class="c1"># Check if call is DERIVATIVE</span>
+                        <span class="k">if</span> <span class="p">(</span><span class="n">id3</span> <span class="ow">in</span> <span class="n">callfunc</span><span class="o">.</span><span class="n">hexdump</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">id1000</span> <span class="ow">in</span> <span class="n">callfunc</span><span class="o">.</span><span class="n">hexdump</span><span class="p">):</span>
+                            <span class="n">maybe_DERIVATIVE</span> <span class="o">=</span> <span class="n">callindex</span>
+                        <span class="c1"># Check if call is INTEGRAL</span>
+                        <span class="k">if</span> <span class="p">(</span><span class="n">id1E38</span> <span class="ow">in</span> <span class="n">callfunc</span><span class="o">.</span><span class="n">hexdump</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">idnot1E38</span> <span class="ow">in</span> <span class="n">callfunc</span><span class="o">.</span><span class="n">hexdump</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">id1000</span> <span class="ow">in</span> <span class="n">callfunc</span><span class="o">.</span><span class="n">hexdump</span><span class="p">):</span>
+                            <span class="n">maybe_INTEGRAL</span> <span class="o">=</span> <span class="n">callindex</span>
+            <span class="c1"># If maybe_ &#39;flags&#39; are set then bingo. Change names of experimental functions</span>
+            <span class="k">if</span> <span class="n">maybe_PID</span> <span class="ow">and</span> <span class="n">maybe_INTEGRAL</span> <span class="ow">and</span> <span class="n">maybe_DERIVATIVE</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Experimental module found function PID at 0x</span><span class="si">{:x}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">prg</span><span class="o">.</span><span class="n">Functions</span><span class="p">[</span><span class="n">maybe_PID</span><span class="p">]</span><span class="o">.</span><span class="n">start</span><span class="p">))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">do___replace_callname</span><span class="p">([</span><span class="n">maybe_PID</span><span class="p">,</span> <span class="s1">&#39;exp_maybe_PID&#39;</span><span class="p">])</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">do___replace_callname</span><span class="p">([</span><span class="n">maybe_PID</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;exp_maybe_PID_INIT&#39;</span><span class="p">])</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">do___replace_callname</span><span class="p">([</span><span class="n">maybe_DERIVATIVE</span><span class="p">,</span> <span class="s1">&#39;exp_maybe_DERIVATIVE&#39;</span><span class="p">])</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">do___replace_callname</span><span class="p">([</span><span class="n">maybe_DERIVATIVE</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;exp_maybe_DERIVATIVE_INIT&#39;</span><span class="p">])</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">do___replace_callname</span><span class="p">([</span><span class="n">maybe_INTEGRAL</span><span class="p">,</span> <span class="s1">&#39;exp_maybe_INTEGRAL&#39;</span><span class="p">])</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">do___replace_callname</span><span class="p">([</span><span class="n">maybe_INTEGRAL</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;exp_maybe_INTEGRAL_INIT&#39;</span><span class="p">])</span>
+                <span class="k">return</span> <span class="mi">0</span>
+    
+    <span class="k">return</span> <span class="mi">0</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Tasos Keliris
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

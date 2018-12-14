@@ -1,0 +1,618 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>PRG_analysis &mdash; ICSREF v0.0.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> ICSREF
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Documentation:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../icsrefPrompt.html">icsrefPrompt</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PRG_analysis.html">PRG_analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Modules.html">Modules</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">ICSREF</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="index.html">Module code</a> &raquo;</li>
+        
+      <li>PRG_analysis</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for PRG_analysis</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python</span>
+
+<span class="n">__author__</span> <span class="o">=</span> <span class="s1">&#39;Tasos Keliris&#39;</span>
+
+<span class="c1"># Imports</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">r2pipe</span>
+<span class="kn">import</span> <span class="nn">angr</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">operator</span>
+<span class="kn">import</span> <span class="nn">hashlib</span>
+<span class="kn">import</span> <span class="nn">ujson</span>
+<span class="kn">import</span> <span class="nn">dill</span>
+<span class="kn">import</span> <span class="nn">struct</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">difflib</span> <span class="k">import</span> <span class="n">SequenceMatcher</span>
+<span class="kn">from</span> <span class="nn">glob</span> <span class="k">import</span> <span class="n">glob</span>
+
+<span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;angr&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">ERROR</span><span class="p">)</span>
+
+<span class="n">thisdir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">trg_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">thisdir</span><span class="p">,</span> <span class="s1">&#39;data&#39;</span><span class="p">,</span> <span class="s1">&#39;0750-0881.trg&#39;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Program"><a class="viewcode-back" href="../PRG_analysis.html#PRG_analysis.Program">[docs]</a><span class="k">class</span> <span class="nc">Program</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    **Program class**</span>
+<span class="sd">       </span>
+<span class="sd">    Contains calls to Function class to instantiate objects for each function</span>
+
+<span class="sd">    Object attributes:</span>
+
+<span class="sd">    - path: Path of PRG file</span>
+<span class="sd">    - name: Name of PRG</span>
+<span class="sd">    - hexdump: Bytes of PRG</span>
+<span class="sd">    - program_start: Offset of program entry point</span>
+<span class="sd">    - program_end: Offset of program end</span>
+<span class="sd">    - dynlib_end: Offset of end of dynamic library strings</span>
+<span class="sd">    - strings: PRG strings (&gt;4 ASCII)</span>
+<span class="sd">    - FunctionBoundaries: Start and end offsets of binary blobs (routines)</span>
+<span class="sd">    - Functions: Contains &lt;Function&gt; objects (see Function class)</span>
+<span class="sd">    - dynlibs_dict: Dictionary with dynamic calls</span>
+<span class="sd">    - statlibs_dict: Dictionary with static calls</span>
+<span class="sd">    - libs_dict: Dictionary with all calls</span>
+<span class="sd">    - inputs: List of outputs</span>
+<span class="sd">    - outputs: List of outputs</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        init function creates the Program object and does the analyses</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Program path</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">path</span> <span class="o">=</span> <span class="n">path</span>
+
+        <span class="c1"># Program name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="c1"># Program hexdump</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hexdump</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__read_file</span><span class="p">()</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;DONE: Hexdump generation&#39;</span><span class="p">)</span>
+
+        <span class="c1"># Analyze program header</span>
+        <span class="c1"># ROM:00000004: End of strings</span>
+        <span class="c1"># ROM:00000020: Entry point (OUTRO?) + 0x18 (==24)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">program_start</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="s1">&#39;I&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">hexdump</span><span class="p">[</span><span class="mh">0x20</span><span class="p">:</span><span class="mh">0x20</span><span class="o">+</span><span class="mi">4</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">24</span>
+        <span class="c1"># ROM:0000002C: End of OUTRO? + 0x18 (==24)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">program_end</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="s1">&#39;I&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">hexdump</span><span class="p">[</span><span class="mh">0x2C</span><span class="p">:</span><span class="mh">0x2C</span><span class="o">+</span><span class="mi">4</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">24</span>
+        <span class="c1"># ROM:00000044: End of dynamic libs (Before SYSDBGHANDLER)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dynlib_end</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="s1">&#39;I&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">hexdump</span><span class="p">[</span><span class="mh">0x44</span><span class="p">:</span><span class="mh">0x44</span><span class="o">+</span><span class="mi">4</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;DONE: Header analysis&#39;</span><span class="p">)</span>
+
+        <span class="c1"># Program strings</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">strings</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__strings</span><span class="p">()</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;DONE: String analysis&#39;</span><span class="p">)</span>
+
+        <span class="c1"># I/O analysis from trg file</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__find_io</span><span class="p">()</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;DONE: I/O analysis&#39;</span><span class="p">)</span>
+
+        <span class="c1"># Function Boundaries</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">FunctionBoundaries</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__find_blocks</span><span class="p">()</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;DONE: Find function boundaries&#39;</span><span class="p">)</span>
+
+        <span class="c1"># Program functions</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Functions</span> <span class="o">=</span> <span class="p">[]</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">__find_functions</span><span class="p">()</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;DONE: Function disassembly&#39;</span><span class="p">)</span>
+        
+        <span class="c1"># Find all static and dynamic libraries and their offsets</span>
+        <span class="c1"># Dynamic libraries</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dynlibs_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__find_dynlibs</span><span class="p">()</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;DONE: Find dynamic calls&#39;</span><span class="p">)</span>
+
+        <span class="c1"># Static libraries</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">statlibs_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__find_statlibs</span><span class="p">()</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;DONE: Find static calls&#39;</span><span class="p">)</span>
+        
+        <span class="c1"># All libraries: Add dynamic and static calls</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">libs_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dynlibs_dict</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">libs_dict</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">statlibs_dict</span><span class="p">)</span>
+        
+        <span class="c1"># Find library calls for each function</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__find_libcalls</span><span class="p">()</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;DONE: Call offsets renaming&#39;</span><span class="p">)</span>
+
+        <span class="c1"># Save object instance in file</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__save_object</span><span class="p">()</span>
+
+
+    <span class="k">def</span> <span class="nf">__find_io</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Find program INPUTS and OUTPUTS based on TRG information</span>
+
+<span class="sd">        Assumes I/O memory locations will appear as direct offsets in the program</span>
+<span class="sd">        and are kind of unique</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Read data from TRG file</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">trg_file</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">trg_data</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">readlines</span><span class="p">()</span>
+        <span class="c1"># Search for hex</span>
+        <span class="n">hex_pattern</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s1">&#39;([0-9a-fA-F])*&#39;</span><span class="p">)</span>
+        <span class="c1"># Find input_start, output_start, input_size, output_size</span>
+        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">trg_data</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s1">&#39;BaseAddressOfInputSegment&#39;</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span>
+                <span class="n">input_start</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">hex_pattern</span><span class="p">,</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;=&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;16#&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+                <span class="n">input_start</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">input_start</span><span class="p">,</span> <span class="mi">16</span><span class="p">)</span>
+            <span class="k">if</span> <span class="s1">&#39;BaseAddressOfOutputSegment&#39;</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span>
+                <span class="n">output_start</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">hex_pattern</span><span class="p">,</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;=&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;16#&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+                <span class="n">output_start</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">output_start</span><span class="p">,</span> <span class="mi">16</span><span class="p">)</span>
+            <span class="k">if</span> <span class="s1">&#39;SizeOfInputSegment&#39;</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span>
+                <span class="n">input_size</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">hex_pattern</span><span class="p">,</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;=&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;16#&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+                <span class="n">input_size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">input_size</span><span class="p">,</span> <span class="mi">16</span><span class="p">)</span>
+            <span class="k">if</span> <span class="s1">&#39;SizeOfOutputSegment&#39;</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span>
+                <span class="n">output_size</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">hex_pattern</span><span class="p">,</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;=&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;16#&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+                <span class="n">output_size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">output_size</span><span class="p">,</span> <span class="mi">16</span><span class="p">)</span>
+
+        <span class="c1"># Find inputs/outputs offsets in the code</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">inputs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">outputs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">input_start</span><span class="p">,</span> <span class="n">input_start</span> <span class="o">+</span> <span class="n">input_size</span><span class="p">,</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="n">match</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__allindices</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hexdump</span><span class="p">,</span> <span class="n">struct</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="s1">&#39;&lt;I&#39;</span><span class="p">,</span> <span class="n">i</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">match</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">inputs</span><span class="p">[</span><span class="nb">hex</span><span class="p">(</span><span class="n">i</span><span class="p">)]</span><span class="o">=</span><span class="p">[</span><span class="nb">hex</span><span class="p">(</span><span class="n">k</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">match</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">output_start</span><span class="p">,</span> <span class="n">output_start</span> <span class="o">+</span> <span class="n">output_size</span><span class="p">,</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="n">match</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__allindices</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hexdump</span><span class="p">,</span> <span class="n">struct</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="s1">&#39;&lt;I&#39;</span><span class="p">,</span> <span class="n">i</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">match</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">outputs</span><span class="p">[</span><span class="nb">hex</span><span class="p">(</span><span class="n">i</span><span class="p">)]</span><span class="o">=</span><span class="p">[</span><span class="nb">hex</span><span class="p">(</span><span class="n">k</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">match</span><span class="p">]</span>
+        <span class="k">return</span> <span class="mi">0</span>
+
+    <span class="k">def</span> <span class="nf">__find_blocks</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Finds binary blobs (routines) based on the following delimiters:</span>
+<span class="sd">         </span>
+<span class="sd">        START: 0D C0 A0 E1 00 58 2D E9 0C B0 A0 E1</span>
+
+<span class="sd">        STOP:  00 A8 1B E9</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Matches the prologue</span>
+        <span class="n">prologue</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\x0d\xc0\xa0\xe1\x00\x58\x2d\xe9\x0c\xb0\xa0\xe1</span><span class="s1">&#39;</span>
+        <span class="n">beginnings</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__allindices</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hexdump</span><span class="p">,</span> <span class="n">prologue</span><span class="p">)</span>
+        <span class="c1"># Matches the epilogue</span>
+        <span class="n">epilogue</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\x00\xa8\x1b\xe9</span><span class="s1">&#39;</span>
+        <span class="n">endings</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__allindices</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hexdump</span><span class="p">,</span> <span class="n">epilogue</span><span class="p">)</span>
+        <span class="n">endings</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">4</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">endings</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="nb">zip</span><span class="p">(</span><span class="n">beginnings</span><span class="p">,</span> <span class="n">endings</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__find_functions</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Produces disassembly listings for all functions</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Open an r2pipe to radare2 \m/</span>
+        <span class="n">r2</span><span class="o">=</span><span class="n">r2pipe</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">)</span>
+        <span class="c1"># Set r2 architecture configuration - Processor specific</span>
+        <span class="n">r2</span><span class="o">.</span><span class="n">cmd</span><span class="p">(</span><span class="s1">&#39;e asm.arch=arm; e asm.bits=32; e cfg.bigendian=false&#39;</span><span class="p">)</span>
+        <span class="c1"># Instantiate Functions</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FunctionBoundaries</span><span class="p">)):</span>
+            <span class="c1"># Code disassembly</span>
+            <span class="c1"># Start: MOV, STMFD, MOV</span>
+            <span class="n">start_code</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">FunctionBoundaries</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="c1"># Stop: LDMDB</span>
+            <span class="n">stop_code</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">FunctionBoundaries</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">length_code</span> <span class="o">=</span> <span class="n">stop_code</span> <span class="o">-</span> <span class="n">start_code</span>
+            <span class="n">disasm_code</span> <span class="o">=</span> <span class="n">r2</span><span class="o">.</span><span class="n">cmd</span><span class="p">(</span><span class="s1">&#39;b </span><span class="si">{}</span><span class="s1">; pD @</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">length_code</span> <span class="p">,</span><span class="n">start_code</span><span class="p">))</span>
+            <span class="c1"># Add spaces for formating purposes and consistency in disassembly string</span>
+            <span class="n">disasm_code</span> <span class="o">=</span> <span class="p">(</span><span class="mi">12</span> <span class="o">*</span> <span class="s1">&#39; &#39;</span> <span class="o">+</span> <span class="n">disasm_code</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="c1"># Add data</span>
+            <span class="c1"># Start at code stop</span>
+            <span class="n">start_data</span> <span class="o">=</span> <span class="n">stop_code</span>
+            <span class="c1"># Stop at beginning of next (or special case for last function from header)</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FunctionBoundaries</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+                <span class="n">stop_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">program_end</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">stop_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">FunctionBoundaries</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">length_data</span> <span class="o">=</span> <span class="n">stop_data</span> <span class="o">-</span> <span class="n">start_data</span>
+            <span class="c1"># Data disassembly</span>
+            <span class="n">disasm_data</span> <span class="o">=</span> <span class="n">r2</span><span class="o">.</span><span class="n">cmd</span><span class="p">(</span><span class="s1">&#39;pxr </span><span class="si">{}</span><span class="s1"> @</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">length_data</span> <span class="p">,</span><span class="n">start_data</span><span class="p">))</span>
+            <span class="n">disasm_data</span> <span class="o">=</span> <span class="n">disasm_data</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="c1"># Disassembly formating</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">line</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">disasm_data</span><span class="p">):</span>
+                <span class="n">disasm_data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;            </span><span class="si">{}</span><span class="s1">     </span><span class="si">{}</span><span class="s1">      </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">line</span><span class="p">[:</span><span class="mi">11</span><span class="p">],</span> <span class="n">line</span><span class="p">[</span><span class="mi">14</span><span class="p">:</span><span class="mi">23</span><span class="p">],</span> <span class="n">line</span> <span class="p">[</span><span class="mi">14</span><span class="p">:])</span>
+            <span class="n">disasm</span> <span class="o">=</span> <span class="n">disasm_code</span> <span class="o">+</span> <span class="n">disasm_data</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Functions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Function</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">,</span> <span class="n">start_code</span><span class="p">,</span> <span class="n">stop_data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">hexdump</span><span class="p">[</span><span class="n">start_code</span><span class="p">:</span><span class="n">stop_data</span><span class="p">],</span> <span class="n">disasm</span><span class="p">))</span>
+        <span class="n">r2</span><span class="o">.</span><span class="n">quit</span><span class="p">()</span>
+        <span class="k">return</span> <span class="mi">0</span>
+
+    <span class="k">def</span> <span class="nf">__find_dynlibs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Finds dynamic libraries and their offsets</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">offset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dynlib_end</span>
+        <span class="c1"># Reverse find 0xFFFF (offset for the beginning of strings)</span>
+        <span class="n">dynlib_offset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hexdump</span><span class="o">.</span><span class="n">rfind</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\xff\xff</span><span class="s1">&#39;</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="n">offset</span><span class="p">)</span> <span class="o">+</span> <span class="mi">2</span>
+        <span class="n">dynlibs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="c1"># Match printable ASCII characters</span>
+        <span class="n">dynlib</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s1">&#39;[ -~]*&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">hexdump</span><span class="p">[</span><span class="n">dynlib_offset</span><span class="p">:])</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="c1"># Find the offsets to dynamic libs</span>
+        <span class="k">while</span> <span class="n">dynlib</span><span class="p">:</span>
+            <span class="n">dynlib_offset</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">dynlib</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="n">temp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hexdump</span><span class="p">[</span><span class="n">dynlib_offset</span><span class="p">:</span><span class="n">dynlib_offset</span><span class="o">+</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;hex&#39;</span><span class="p">)</span>
+            <span class="n">jump_offset</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">m</span><span class="p">[</span><span class="mi">2</span><span class="p">:</span><span class="mi">4</span><span class="p">]</span><span class="o">+</span><span class="n">m</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">]</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="p">[</span><span class="n">temp</span><span class="p">[</span><span class="n">i</span><span class="p">:</span><span class="n">i</span><span class="o">+</span><span class="mi">4</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">temp</span><span class="p">),</span><span class="mi">4</span><span class="p">)]]),</span><span class="mi">16</span><span class="p">)</span> <span class="o">*</span> <span class="mi">4</span> <span class="o">+</span> <span class="mi">8</span>
+            <span class="n">dynlibs</span><span class="p">[</span><span class="n">jump_offset</span><span class="p">]</span> <span class="o">=</span> <span class="n">dynlib</span>
+            <span class="n">dynlib_offset</span> <span class="o">+=</span> <span class="mi">2</span>
+            <span class="n">dynlib</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s1">&#39;[ -~]*&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">hexdump</span><span class="p">[</span><span class="n">dynlib_offset</span><span class="p">:])</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">dynlibs</span>
+
+    <span class="k">def</span> <span class="nf">__find_statlibs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Finds static libraries and their offsets</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">entry_offset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Functions</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">start</span>
+        <span class="n">funs</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">FunctionBoundaries</span><span class="p">]</span>
+        <span class="c1"># Change LDMDB epilogue to 0xFFFFFFFF so that the simgr errors and doesn&#39;t go to empty state</span>
+        <span class="n">epilogue</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\x00\xa8\x1b\xe9</span><span class="s1">&#39;</span>
+        <span class="c1"># Change 0x2000 location of writing addresses in OUTRO with 0x10000000 to avoid overwriting code</span>
+        <span class="n">code_start</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\x00\x20\x00\x00</span><span class="s1">&#39;</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;temphexdump.bin&#39;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">hexdump_mod</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hexdump</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">epilogue</span><span class="p">,</span> <span class="s1">&#39;</span><span class="se">\xff\xff\xff\xff</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="n">hexdump_mod</span> <span class="o">=</span> <span class="n">hexdump_mod</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">code_start</span><span class="p">,</span> <span class="s1">&#39;</span><span class="se">\x00\x00\x00\x10</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">hexdump_mod</span><span class="p">)</span>
+        <span class="n">proj</span> <span class="o">=</span> <span class="n">angr</span><span class="o">.</span><span class="n">Project</span><span class="p">(</span><span class="s1">&#39;temphexdump.bin&#39;</span><span class="p">,</span> <span class="n">load_options</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;main_opts&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;backend&#39;</span><span class="p">:</span> <span class="s1">&#39;blob&#39;</span><span class="p">,</span> <span class="s1">&#39;custom_base_addr&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;custom_arch&#39;</span><span class="p">:</span><span class="s1">&#39;ARMEL&#39;</span><span class="p">,</span> <span class="s1">&#39;custom_entry_point&#39;</span><span class="p">:</span><span class="mh">0x50</span><span class="p">},</span> <span class="s1">&#39;auto_load_libs&#39;</span><span class="p">:</span><span class="kc">False</span><span class="p">})</span>
+        <span class="n">state</span> <span class="o">=</span> <span class="n">proj</span><span class="o">.</span><span class="n">factory</span><span class="o">.</span><span class="n">entry_state</span><span class="p">()</span>
+        <span class="n">state</span><span class="o">.</span><span class="n">regs</span><span class="o">.</span><span class="n">pc</span> <span class="o">=</span> <span class="n">entry_offset</span>
+        <span class="n">simgr</span> <span class="o">=</span> <span class="n">proj</span><span class="o">.</span><span class="n">factory</span><span class="o">.</span><span class="n">simulation_manager</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
+
+        <span class="c1"># Initialize some (0xFF) mem locations so that execution doesn&#39;t jump to end. How much is &#39;some&#39;?</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mh">0xFF</span><span class="p">,</span><span class="mi">4</span><span class="p">):</span>
+            <span class="n">simgr</span><span class="o">.</span><span class="n">active</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">mem</span><span class="p">[</span><span class="n">simgr</span><span class="o">.</span><span class="n">active</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">regs</span><span class="o">.</span><span class="n">r0</span> <span class="o">+</span> <span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">long</span> <span class="o">=</span> <span class="mh">0xFFFFFFFF</span>
+
+        <span class="c1"># Run Forrest, RUN!</span>
+        <span class="c1"># PROBLEM: Sometimes(?) the simulator gets stuck. Solved by giving the program a &#39;push&#39;</span>
+        <span class="k">while</span> <span class="n">simgr</span><span class="o">.</span><span class="n">active</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">simgr</span><span class="o">.</span><span class="n">active</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">is_true</span><span class="p">(</span><span class="n">simgr</span><span class="o">.</span><span class="n">active</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">regs</span><span class="o">.</span><span class="n">r1</span> <span class="o">==</span> <span class="mh">0x180</span><span class="p">):</span>
+                <span class="n">simgr</span><span class="o">.</span><span class="n">active</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">regs</span><span class="o">.</span><span class="n">r1</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">elif</span> <span class="n">simgr</span><span class="o">.</span><span class="n">active</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">is_true</span><span class="p">(</span><span class="n">simgr</span><span class="o">.</span><span class="n">active</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">regs</span><span class="o">.</span><span class="n">r1</span> <span class="o">==</span> <span class="mh">0x18c</span><span class="p">):</span>
+                <span class="n">simgr</span><span class="o">.</span><span class="n">active</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">regs</span><span class="o">.</span><span class="n">r1</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">elif</span> <span class="n">simgr</span><span class="o">.</span><span class="n">active</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">is_true</span><span class="p">(</span><span class="n">simgr</span><span class="o">.</span><span class="n">active</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">regs</span><span class="o">.</span><span class="n">r1</span> <span class="o">==</span> <span class="mh">0x3fa</span><span class="p">):</span>
+                <span class="n">simgr</span><span class="o">.</span><span class="n">active</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">regs</span><span class="o">.</span><span class="n">r1</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">simgr</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+
+        <span class="c1"># Find the static offsets</span>
+        <span class="n">statlibs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="n">statlibs</span><span class="p">)</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">funs</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">mem_val</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">simgr</span><span class="o">.</span><span class="n">errored</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">state</span><span class="o">.</span><span class="n">mem</span><span class="p">[</span><span class="n">simgr</span><span class="o">.</span><span class="n">errored</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">state</span><span class="o">.</span><span class="n">regs</span><span class="o">.</span><span class="n">r0</span> <span class="o">+</span> <span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">int</span><span class="o">.</span><span class="n">resolved</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">mem_val</span> <span class="ow">in</span> <span class="n">funs</span><span class="p">:</span>
+                <span class="n">statlibs</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">8</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;sub_</span><span class="si">{:x}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">mem_val</span><span class="p">)</span>
+            <span class="n">i</span> <span class="o">+=</span> <span class="mi">4</span>
+        <span class="c1"># Remove temp file</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="s1">&#39;temphexdump.bin&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">statlibs</span>
+
+    <span class="k">def</span> <span class="nf">__find_libcalls</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Finds the calls from all functions (dynamic and static)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">func</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">Functions</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">line</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">func</span><span class="o">.</span><span class="n">disasm</span><span class="p">):</span>
+                <span class="c1"># Jump register can be other than r8</span>
+                <span class="k">if</span> <span class="s1">&#39;mov pc, r&#39;</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span>
+                    <span class="n">i</span><span class="o">=</span><span class="mi">3</span>
+                    <span class="c1"># Go backwards until ldr r in line</span>
+                    <span class="k">while</span> <span class="ow">not</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s1">&#39;ldr r[0-9], \[0x&#39;</span><span class="p">,</span> <span class="n">func</span><span class="o">.</span><span class="n">disasm</span><span class="p">[</span><span class="n">index</span><span class="o">-</span><span class="n">i</span><span class="p">]):</span>
+                        <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+                    <span class="n">jump</span> <span class="o">=</span> <span class="n">func</span><span class="o">.</span><span class="n">disasm</span><span class="p">[</span><span class="n">index</span><span class="o">-</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;;&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;=&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">rstrip</span><span class="p">()</span>
+                    <span class="c1"># Format jump address (if hex)</span>
+                    <span class="k">if</span> <span class="s1">&#39;0x&#39;</span> <span class="ow">in</span> <span class="n">jump</span><span class="p">:</span>
+                        <span class="n">jump</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">jump</span><span class="p">,</span> <span class="mi">16</span><span class="p">)</span>
+                    <span class="n">jump</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">jump</span><span class="p">)</span>
+                    <span class="c1"># Annotate disassembly</span>
+                    <span class="n">lib_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">libs_dict</span><span class="p">[</span><span class="n">jump</span><span class="p">]</span>
+                    <span class="n">func</span><span class="o">.</span><span class="n">disasm</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">+=</span> <span class="s1">&#39;                  ; call to </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">lib_name</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">lib_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">func</span><span class="o">.</span><span class="n">calls</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                        <span class="n">func</span><span class="o">.</span><span class="n">calls</span><span class="p">[</span><span class="n">lib_name</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">func</span><span class="o">.</span><span class="n">calls</span><span class="p">[</span><span class="n">lib_name</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">return</span> <span class="mi">0</span>
+
+    <span class="k">def</span> <span class="nf">__read_file</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Reads hexdump from file</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f_in</span><span class="p">:</span>
+            <span class="n">file_bytes</span> <span class="o">=</span> <span class="n">f_in</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">file_bytes</span>
+
+    <span class="k">def</span> <span class="nf">__save_object</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Serializes the object instance and saves it to a file using the dill module</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Create directory for output results</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s1">&#39;results&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span> 
+            <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+                <span class="k">raise</span>
+        <span class="n">dat_f</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">_init_analysis.dat&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
+        
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">dat_f</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">dill</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__allindices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_bytes</span><span class="p">,</span> <span class="n">sub</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Finds all occurrences of substring</span>
+<span class="sd">            </span>
+<span class="sd">        :param: file_bytes: bytes to perform the search on</span>
+<span class="sd">        :param: sub: substring to search for in file_bytes</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">i</span> <span class="o">=</span> <span class="n">file_bytes</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">sub</span><span class="p">,</span> <span class="n">offset</span><span class="p">)</span>
+        <span class="n">listindex</span><span class="o">=</span><span class="p">[]</span>
+        <span class="k">while</span> <span class="n">i</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">listindex</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+            <span class="n">i</span> <span class="o">=</span> <span class="n">file_bytes</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">sub</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">listindex</span>
+    
+    <span class="k">def</span> <span class="nf">__strings</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Finds consecutive &lt;= 4-byte ASCII character strings</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">strings</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">p</span><span class="o">=</span><span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s1">&#39;([ -~]{4,})&#39;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">p</span><span class="o">.</span><span class="n">finditer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hexdump</span><span class="p">):</span>
+            <span class="n">strings</span><span class="p">[</span><span class="n">m</span><span class="o">.</span><span class="n">start</span><span class="p">()]</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">strings</span></div>
+
+<div class="viewcode-block" id="Function"><a class="viewcode-back" href="../PRG_analysis.html#PRG_analysis.Function">[docs]</a><span class="k">class</span> <span class="nc">Function</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    **Function class**</span>
+
+<span class="sd">    Object attributes:</span>
+
+<span class="sd">    - path: Path of PRG file</span>
+<span class="sd">    - start: Offset of function in PRG</span>
+<span class="sd">    - offset: Offset of function in PRG</span>
+<span class="sd">    - length: Length in bytes of function</span>
+<span class="sd">    - hexdump: Bytes of specific function</span>
+<span class="sd">    - disasm: Disassembly listing of function</span>
+<span class="sd">    - hash: SHA256 hash digest of function opcodes</span>
+<span class="sd">    - calls: Calls to other dynamic or static locations from function</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="n">hexdump</span><span class="p">,</span> <span class="n">disasm</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Function initialization</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Path</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">path</span> <span class="o">=</span> <span class="n">path</span>
+        <span class="c1"># Function start offset</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">start</span> <span class="o">=</span> <span class="n">start</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">offset</span> <span class="o">=</span> <span class="n">start</span>
+        <span class="c1"># Function name. Convention: sub_&lt;offset&gt;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;sub_</span><span class="si">{:x}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="p">)</span>
+        <span class="c1"># Function stop offset</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stop</span> <span class="o">=</span> <span class="n">stop</span>
+        <span class="c1"># Function length in bytes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">length</span> <span class="o">=</span> <span class="n">stop</span> <span class="o">-</span> <span class="n">start</span>
+        <span class="c1"># Hexdump of particular function</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hexdump</span> <span class="o">=</span> <span class="n">hexdump</span>
+        <span class="c1"># Disassembly listing of particular function</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">disasm</span> <span class="o">=</span> <span class="n">disasm</span>
+        <span class="c1"># Create string with opcode sequences for hash matching</span>
+        <span class="n">op_str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">disasm</span><span class="p">:</span>
+            <span class="n">op</span> <span class="o">=</span> <span class="n">line</span><span class="p">[</span><span class="mi">43</span><span class="p">:]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="c1"># Discard data</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">op</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">8</span><span class="p">:</span>
+                <span class="n">op_str</span> <span class="o">+=</span> <span class="n">line</span><span class="p">[</span><span class="mi">43</span><span class="p">:]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="c1"># Function opcodes SHA256 hash</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hash</span> <span class="o">=</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">sha256</span><span class="p">(</span><span class="n">op_str</span><span class="p">)</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()</span>
+        <span class="c1"># Initialize list of calls from function. Gets populated later</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">calls</span> <span class="o">=</span> <span class="p">{}</span></div>
+
+<span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="n">argv</span><span class="p">):</span>
+    <span class="c1"># Main function: Parses command line arguments</span>
+    <span class="c1"># argv[0] is the input PRG file</span>
+    <span class="n">prg</span> <span class="o">=</span> <span class="n">Program</span><span class="p">(</span><span class="n">argv</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+    <span class="c1"># Print dynamic and static libraries and their calling offsets</span>
+    <span class="n">sort_libs</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">prg</span><span class="o">.</span><span class="n">libs_dict</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="n">key</span> <span class="o">=</span> <span class="n">operator</span><span class="o">.</span><span class="n">itemgetter</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">lib</span> <span class="ow">in</span> <span class="n">sort_libs</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="se">\t</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">hex</span><span class="p">(</span><span class="n">lib</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">lib</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+
+    <span class="c1"># Print the calls from each function</span>
+    <span class="k">for</span> <span class="n">fun</span> <span class="ow">in</span> <span class="n">prg</span><span class="o">.</span><span class="n">Functions</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="se">\t</span><span class="s1">==&gt;</span><span class="se">\t</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">fun</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">fun</span><span class="o">.</span><span class="n">calls</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="mi">0</span>
+
+<span class="c1"># Call main with command line arguments</span>
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">main</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Tasos Keliris
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

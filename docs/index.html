@@ -1,0 +1,332 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>ICSREF: ICS Reverse Engineering Framework &mdash; ICSREF v0.0.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="icsrefPrompt" href="icsrefPrompt.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="#" class="icon icon-home"> ICSREF
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Documentation:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="icsrefPrompt.html">icsrefPrompt</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PRG_analysis.html">PRG_analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Modules.html">Modules</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="#">ICSREF</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="#">Docs</a> &raquo;</li>
+        
+      <li>ICSREF: ICS Reverse Engineering Framework</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="icsref-ics-reverse-engineering-framework">
+<h1>ICSREF: ICS Reverse Engineering Framework<a class="headerlink" href="#icsref-ics-reverse-engineering-framework" title="Permalink to this headline">¶</a></h1>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>    _______________ ____  ____________
+   /  _/ ____/ ___// __ \/ ____/ ____/
+   / // /    \__ \/ /_/ / __/ / /_
+ _/ // /___ ___/ / _, _/ /___/ __/
+/___/\____//____/_/ |_/_____/_/
+</pre></div>
+</div>
+<p>by Tasos Keliris <a class="reference external" href="https://www.twitter.com/koukouviou">&#64;koukouviou</a></p>
+<div class="section" id="preview">
+<h2>Preview<a class="headerlink" href="#preview" title="Permalink to this headline">¶</a></h2>
+<embed>
+    <a href="https://asciinema.org/a/9l96XWgNttz1WTdXGIngMAAKe" target="_blank"><img src="https://asciinema.org/a/9l96XWgNttz1WTdXGIngMAAKe.png" /></a>
+</embed></div>
+<div class="section" id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">ICSREF</span></code> is a modular framework that automates the reverse engineering process of <a class="reference external" href="https://www.codesys.com/">CODESYS</a> binaries compiled with the CODESYS v2 compiler. The framework can:</p>
+<ul class="simple">
+<li><dl class="first docutils">
+<dt>Perform core analysis of arbitrary <code class="docutils literal notranslate"><span class="pre">PRG</span></code> programs. Core analysis includes:</dt>
+<dd><ol class="first last arabic">
+<li>Delimitation of binary blobs (i.e., functions/routines).</li>
+<li>Identification of calls to dynamic libraries.</li>
+<li>Identification of calls to static libraries (other locations in the same binary).</li>
+<li>Identification of how many and which physical I/Os the binary uses, provided a TRG file that contains the memory mappings of physical I/Os of the particular device the binary is compiled for.</li>
+</ol>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>Identify known library functions included statically in the binary:</dt>
+<dd><ol class="first last arabic">
+<li>Using an opcode-based hash matching technique</li>
+<li>Using experimental signature-based techniques. This is at the moment only implemented for Proportional-Integral-Derivative (PID) CODESYS library functions.</li>
+</ol>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>Extract arguments passed to static functions. This is at the moment only implemented for the PID_FIXCYCLE CODESYS library function, but it is trivial to extend this to other functions of interest.</dt>
+<dd><ol class="first last arabic">
+<li>Argument extraction is powered by symbolic execution and <code class="docutils literal notranslate"><span class="pre">angr</span></code></li>
+<li>It can handle cases where the arguments are not impacted by I/O measurements (i.e., defined globally or passed directly)</li>
+</ol>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>Plot SVG graphs of the analyzed binary, including:</dt>
+<dd><ol class="first last arabic">
+<li>Calls between static functions</li>
+<li>Calls to dynamic functions</li>
+<li>Hyperlinks to the disassembly listings of each function from the SVG</li>
+</ol>
+</dd>
+</dl>
+</li>
+</ul>
+<p>Graphs are powered by <a class="reference external" href="https://graphviz.org/">Graphviz</a>. Here’s a neat example:</p>
+<a class="reference internal image-reference" href="images/graph_hil.jpg"><img alt="images/graph_hil.jpg" src="images/graph_hil.jpg" style="width: 500pt;" /></a>
+<p>The framework supports an interactive mode, where all the processing modules are loaded. Users can further investigate and analyze their binaries by exploring the different options. The interactive environment also offers useful <cite>help</cite> docstrings.</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>(icsref) me@example:$ ./icsref.py
+
+ICS Reverse Engineering Framework
+    _______________ ____  ____________
+   /  _/ ____/ ___// __ \/ ____/ ____/
+   / // /    \__ \/ /_/ / __/ / /_
+ _/ // /___ ___/ / _, _/ /___/ __/
+/___/\____//____/_/ |_/_____/_/
+
+author: Tasos Keliris (@koukouviou)
+Type &lt;help&gt; if you need a nudge
+reversing@icsref:$
+reversing@icsref:$ help
+
+Documented commands (type help &lt;topic&gt;):
+========================================
+__changepid         changepid       exp_pid_match  history  pyscript  set
+__replace_callname  cleanup         graphbuilder   load     quit      shell
+_relative_load      cmdenvironment  hashmatch      pidargs  run       shortcuts
+analyze             edit            help           py       save      show
+</pre></div>
+</div>
+</div>
+<div class="section" id="documentation">
+<h2>Documentation<a class="headerlink" href="#documentation" title="Permalink to this headline">¶</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">ICSREF</span></code> API is documented in a <em>Read the Docs</em> style. Once you download the repository you can traverse the docs directory and open index.html in your favorite browser.</p>
+</div>
+<div class="section" id="acknowledgements">
+<h2>Acknowledgements<a class="headerlink" href="#acknowledgements" title="Permalink to this headline">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">ICSREF</span></code>, as all things good in life, is based on the shoulder of giants. The framework relies on symbolic execution using <code class="docutils literal notranslate"><span class="pre">angr</span></code> for performing the most interesting analyses such as calculating offsets for static calls and the arguments to function calls. Disassembly listings for the graphing module are generated using the amazing <code class="docutils literal notranslate"><span class="pre">r2</span></code>. The interactive mode of the tool is powered by the <code class="docutils literal notranslate"><span class="pre">cmd2</span></code> python tool. Beautiful documentation is generated with Sphinx and the sphinx_rtd_theme.</p>
+<ul class="simple">
+<li><a class="reference external" href="http://angr.io/">angr</a></li>
+<li><a class="reference external" href="https://rada.re">radare2</a></li>
+<li><a class="reference external" href="https://github.com/python-cmd2/cmd2">cmd2</a></li>
+<li><a class="reference external" href="http://sphinx-doc.org/">Sphinx</a></li>
+<li><a class="reference external" href="https://sphinx-rtd-theme.readthedocs.io/">sphinx_rtd_theme</a></li>
+</ul>
+</div>
+<div class="section" id="icsref-documentation">
+<h2>ICSREF documentation<a class="headerlink" href="#icsref-documentation" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<p class="caption"><span class="caption-text">Documentation:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="icsrefPrompt.html">icsrefPrompt</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PRG_analysis.html">PRG_analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Modules.html">Modules</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="Modules.html#graphbuilder">graphbuilder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Modules.html#cleanup">cleanup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Modules.html#hashmatch">hashmatch</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Modules.html#exp-pid-match">exp_pid_match</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Modules.html#pidargs">pidargs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Modules.html#analytics">analytics</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="index">
+<h2>Index<a class="headerlink" href="#index" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></li>
+</ul>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="icsrefPrompt.html" class="btn btn-neutral float-right" title="icsrefPrompt" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Tasos Keliris
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

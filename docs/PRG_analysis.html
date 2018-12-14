@@ -1,0 +1,327 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>PRG_analysis &mdash; ICSREF v0.0.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Modules" href="Modules.html" />
+    <link rel="prev" title="icsrefPrompt" href="icsrefPrompt.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> ICSREF
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Documentation:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="icsrefPrompt.html">icsrefPrompt</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">PRG_analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Modules.html">Modules</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">ICSREF</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>PRG_analysis</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/PRG_analysis.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-PRG_analysis">
+<span id="prg-analysis"></span><h1>PRG_analysis<a class="headerlink" href="#module-PRG_analysis" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="PRG_analysis.Function">
+<em class="property">class </em><code class="descclassname">PRG_analysis.</code><code class="descname">Function</code><span class="sig-paren">(</span><em>path</em>, <em>start</em>, <em>stop</em>, <em>hexdump</em>, <em>disasm</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/PRG_analysis.html#Function"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PRG_analysis.Function" title="Permalink to this definition">¶</a></dt>
+<dd><p><strong>Function class</strong></p>
+<p>Object attributes:</p>
+<ul class="simple">
+<li>path: Path of PRG file</li>
+<li>start: Offset of function in PRG</li>
+<li>offset: Offset of function in PRG</li>
+<li>length: Length in bytes of function</li>
+<li>hexdump: Bytes of specific function</li>
+<li>disasm: Disassembly listing of function</li>
+<li>hash: SHA256 hash digest of function opcodes</li>
+<li>calls: Calls to other dynamic or static locations from function</li>
+</ul>
+</dd></dl>
+
+<dl class="class">
+<dt id="PRG_analysis.Program">
+<em class="property">class </em><code class="descclassname">PRG_analysis.</code><code class="descname">Program</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/PRG_analysis.html#Program"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PRG_analysis.Program" title="Permalink to this definition">¶</a></dt>
+<dd><p><strong>Program class</strong></p>
+<p>Contains calls to Function class to instantiate objects for each function</p>
+<p>Object attributes:</p>
+<ul class="simple">
+<li>path: Path of PRG file</li>
+<li>name: Name of PRG</li>
+<li>hexdump: Bytes of PRG</li>
+<li>program_start: Offset of program entry point</li>
+<li>program_end: Offset of program end</li>
+<li>dynlib_end: Offset of end of dynamic library strings</li>
+<li>strings: PRG strings (&gt;4 ASCII)</li>
+<li>FunctionBoundaries: Start and end offsets of binary blobs (routines)</li>
+<li>Functions: Contains &lt;Function&gt; objects (see Function class)</li>
+<li>dynlibs_dict: Dictionary with dynamic calls</li>
+<li>statlibs_dict: Dictionary with static calls</li>
+<li>libs_dict: Dictionary with all calls</li>
+<li>inputs: List of outputs</li>
+<li>outputs: List of outputs</li>
+</ul>
+<dl class="method">
+<dt id="PRG_analysis.Program._Program__allindices">
+<code class="descname">_Program__allindices</code><span class="sig-paren">(</span><em>file_bytes</em>, <em>sub</em>, <em>offset=0</em><span class="sig-paren">)</span><a class="headerlink" href="#PRG_analysis.Program._Program__allindices" title="Permalink to this definition">¶</a></dt>
+<dd><p>Finds all occurrences of substring</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Param:</th><td class="field-body">file_bytes: bytes to perform the search on</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Param:</th><td class="field-body">sub: substring to search for in file_bytes</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="PRG_analysis.Program._Program__find_blocks">
+<code class="descname">_Program__find_blocks</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PRG_analysis.Program._Program__find_blocks" title="Permalink to this definition">¶</a></dt>
+<dd><p>Finds binary blobs (routines) based on the following delimiters:</p>
+<p>START: 0D C0 A0 E1 00 58 2D E9 0C B0 A0 E1</p>
+<p>STOP:  00 A8 1B E9</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PRG_analysis.Program._Program__find_dynlibs">
+<code class="descname">_Program__find_dynlibs</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PRG_analysis.Program._Program__find_dynlibs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Finds dynamic libraries and their offsets</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PRG_analysis.Program._Program__find_functions">
+<code class="descname">_Program__find_functions</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PRG_analysis.Program._Program__find_functions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Produces disassembly listings for all functions</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PRG_analysis.Program._Program__find_io">
+<code class="descname">_Program__find_io</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PRG_analysis.Program._Program__find_io" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find program INPUTS and OUTPUTS based on TRG information</p>
+<p>Assumes I/O memory locations will appear as direct offsets in the program
+and are kind of unique</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PRG_analysis.Program._Program__find_libcalls">
+<code class="descname">_Program__find_libcalls</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PRG_analysis.Program._Program__find_libcalls" title="Permalink to this definition">¶</a></dt>
+<dd><p>Finds the calls from all functions (dynamic and static)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PRG_analysis.Program._Program__find_statlibs">
+<code class="descname">_Program__find_statlibs</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PRG_analysis.Program._Program__find_statlibs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Finds static libraries and their offsets</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PRG_analysis.Program._Program__read_file">
+<code class="descname">_Program__read_file</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PRG_analysis.Program._Program__read_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads hexdump from file</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PRG_analysis.Program._Program__save_object">
+<code class="descname">_Program__save_object</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PRG_analysis.Program._Program__save_object" title="Permalink to this definition">¶</a></dt>
+<dd><p>Serializes the object instance and saves it to a file using the dill module</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PRG_analysis.Program._Program__strings">
+<code class="descname">_Program__strings</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PRG_analysis.Program._Program__strings" title="Permalink to this definition">¶</a></dt>
+<dd><p>Finds consecutive &lt;= 4-byte ASCII character strings</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="Modules.html" class="btn btn-neutral float-right" title="Modules" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="icsrefPrompt.html" class="btn btn-neutral" title="icsrefPrompt" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Tasos Keliris
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
