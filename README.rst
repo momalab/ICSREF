@@ -2,6 +2,11 @@
 ICSREF: ICS Reverse Engineering Framework
 *****************************************
 
+Overview
+========
+
+``ICSREF`` is a modular framework that automates the reverse engineering process of CODESYS_ binaries compiled with the CODESYS v2 compiler.
+
 .. code-block:: none
 
         _______________ ____  ____________
@@ -24,10 +29,10 @@ Preview
         <a href="https://asciinema.org/a/9l96XWgNttz1WTdXGIngMAAKe" target="_blank"><img src="https://asciinema.org/a/9l96XWgNttz1WTdXGIngMAAKe.png" /></a>
     </embed>
 
-Overview
+Analyses
 ========
 
-``ICSREF`` is a modular framework that automates the reverse engineering process of CODESYS_ binaries compiled with the CODESYS v2 compiler. The framework can:
+ The framework can:
 
 * Perform core analysis of arbitrary ``PRG`` programs. Core analysis includes:
     1. Delimitation of binary blobs (i.e., functions/routines).
@@ -96,6 +101,13 @@ Documentation
 =============
 
 The ``ICSREF`` API is documented in a *Read the Docs* style. Once you download the repository you can traverse the docs directory and open index.html in your favorite browser.
+
+
+Cite us!
+========
+If you find our work interesting and use it in your (academic or not) research, please cite our NDSS'19 paper describing ICSREF:
+
+A. Keliris, and M. Michail, "ICSREF: A Framework for Automated Reverse Engineering of Industrial Control Systems Binaries", in NDSS'19.
 
 
 Acknowledgements
