@@ -32,7 +32,7 @@ Preview
 Analyses
 ========
 
- The framework can:
+The framework can:
 
 * Perform core analysis of arbitrary ``PRG`` programs. Core analysis includes:
     1. Delimitation of binary blobs (i.e., functions/routines).
@@ -107,7 +107,7 @@ Cite us!
 ========
 If you find our work interesting and use it in your (academic or not) research, please cite our NDSS'19 paper describing ICSREF:
 
-A. Keliris, and M. Michail, "ICSREF: A Framework for Automated Reverse Engineering of Industrial Control Systems Binaries", in NDSS'19.
+Anastasis Keliris, and Michail Maniatakos, "ICSREF: A Framework for Automated Reverse Engineering of Industrial Control Systems Binaries", in NDSS'19.
 
 
 Acknowledgements
