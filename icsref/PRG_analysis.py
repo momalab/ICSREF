@@ -393,7 +393,7 @@ class Function():
         for line in self.disasm:
             op = line[43:].split(' ')[0]
             # Discard data
-            if len(op) < 8:
+            if len(op) < 6:
                 op_str += line[43:].split(' ')[0]
         # Function opcodes SHA256 hash
         self.hash = hashlib.sha256(op_str).hexdigest()
