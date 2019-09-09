@@ -230,50 +230,30 @@ class Program():
             dynlib_offset += 2
             dynlib = re.search('[ -~]*', self.hexdump[dynlib_offset:]).group(0)
         return dynlibs
-
+    #by wookong
+    #a more resonable way to solve their offsets
     def __find_statlibs(self):
-        """
-        Finds static libraries and their offsets
-        """
         entry_offset = self.Functions[-1].start
+        stop_offset  = self.FunctionBoundaries[-1][1]-8
         funs = [x for x, _ in self.FunctionBoundaries]
-        # Change LDMDB epilogue to 0xFFFFFFFF so that the simgr errors and doesn't go to empty state
-        epilogue = '\x00\xa8\x1b\xe9'
-        # Change 0x2000 location of writing addresses in OUTRO with 0x10000000 to avoid overwriting code
         code_start = '\x00\x20\x00\x00'
         with open('temphexdump.bin', 'w') as f:
-            hexdump_mod = self.hexdump.replace(epilogue, '\xff\xff\xff\xff')
-            hexdump_mod = hexdump_mod.replace(code_start, '\x00\x00\x00\x10')
+            hexdump_mod = self.hexdump.replace(code_start, '\x00\x00\x00\x10')
             f.write(hexdump_mod)
         proj = angr.Project('temphexdump.bin', load_options={'main_opts': {'backend': 'blob', 'custom_base_addr': 0, 'custom_arch':'ARMEL', 'custom_entry_point':0x50}, 'auto_load_libs':False})
         state = proj.factory.entry_state()
         state.regs.pc = entry_offset
         simgr = proj.factory.simulation_manager(state)
-
-        # Initialize some (0xFF) mem locations so that execution doesn't jump to end. How much is 'some'?
         for i in range(0,0xFF,4):
             simgr.active[0].mem[simgr.active[0].regs.r0 + i].long = 0xFFFFFFFF
-
-        # Run Forrest, RUN!
-        # PROBLEM: Sometimes(?) the simulator gets stuck. Solved by giving the program a 'push'
-        while simgr.active:
-            if simgr.active[0].solver.is_true(simgr.active[0].regs.r1 == 0x180):
-                simgr.active[0].regs.r1 += 1
-            elif simgr.active[0].solver.is_true(simgr.active[0].regs.r1 == 0x18c):
-                simgr.active[0].regs.r1 += 1
-            elif simgr.active[0].solver.is_true(simgr.active[0].regs.r1 == 0x3fa):
-                simgr.active[0].regs.r1 += 1
-            simgr.step()
-
-        # Find the static offsets
+        simgr.explore(find=stop_offset)
         statlibs = {}
         i = 0
         while len(statlibs) < len(funs) - 1:
-            mem_val = state.solver.eval(simgr.errored[0].state.mem[simgr.errored[0].state.regs.r0 + i].int.resolved)
+            mem_val = state.solver.eval(simgr.found[0].mem[simgr.found[0].regs.r1 + i].int.resolved)
             if mem_val in funs:
                 statlibs[i + 8] = 'sub_{:x}'.format(mem_val)
             i += 4
-        # Remove temp file
         os.remove('temphexdump.bin')
         return statlibs
 
