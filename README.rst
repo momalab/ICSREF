@@ -120,3 +120,11 @@ Acknowledgements
 * `cmd2 <https://github.com/python-cmd2/cmd2>`__
 * `Sphinx <http://sphinx-doc.org/>`__
 * `sphinx_rtd_theme <https://sphinx-rtd-theme.readthedocs.io/>`__
+
+
+Contributors
+============
+
+A big thank you to everyone contributing on this project. See CONTRIBUTORS_
+
+.. _CONTRIBUTORS: CONTRIBUTORS
