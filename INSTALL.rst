@@ -1,11 +1,11 @@
-``ICSREF`` is developed in Python 2.7. To install it on a fresh Ubuntu 16.04 LTS system you can follow these steps:
+``ICSREF`` is developed in Python 3+. To install it on a fresh Ubuntu 20.04 LTS system you can follow these steps:
 
 Install the system dependencies:
 --------------------------------
   
 .. code-block:: none
 
-    sudo apt install git python-pip libcapstone3 python-dev libffi-dev build-essential virtualenvwrapper graphviz libgraphviz-dev graphviz-dev pkg-config
+    sudo apt install git python3-pip libcapstone3 python3-dev libffi-dev build-essential graphviz libgraphviz-dev graphviz-dev pkg-config
 
 Install radare2
 ---------------
@@ -27,16 +27,18 @@ Create a virtual environment (in a fresh shell)
 
 .. code-block:: none
 
-    mkvirtualenv icsref
+    virtualenv venv
+    source venv/bin/activate
+    
 
 Install the python package dependencies
 ---------------------------------------
 
-To ensure stability, local wheels of the dependencies are included in the ``wheelhouse`` directory:
-
 .. code-block:: none
 
-    pip install --no-index --find-links=wheelhouse -r requirements.txt
+    pip install -r requirements_full.txt
+    OR (sometimes the above fails)
+    pip install networkx r2pipe dill ujson cmd2 angr pygraphviz pymodbus testtools six==1.14.0
 
 Create bash alias
 -----------------
