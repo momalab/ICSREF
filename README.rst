@@ -20,6 +20,20 @@ by Tasos Keliris `\@koukouviou`_
 
 .. _`\@koukouviou`: https://www.twitter.com/koukouviou
 
+Cite us!
+========
+If you find our work interesting and use it in your (academic or not) research, please cite our NDSS'19 paper describing ICSREF:
+
+Anastasis Keliris, and Michail Maniatakos, "ICSREF: A Framework for Automated Reverse Engineering of Industrial Control Systems Binaries", in NDSS'19.
+
+Bibtex:
+@inproceedings{keliris2019icsref,
+  title={{ICSREF}: A Framework for Automated Reverse Engineering of Industrial Control Systems Binaries},
+  author={Keliris, A. and Maniatakos, M.},
+  booktitle={Network and Distributed System Security Symposium (NDSS)},
+  year={2019}
+}
+
 Preview
 =======
 
@@ -101,13 +115,6 @@ Documentation
 =============
 
 The ``ICSREF`` API is documented in a *Read the Docs* style. Once you download the repository you can traverse the docs directory and open index.html in your favorite browser.
-
-
-Cite us!
-========
-If you find our work interesting and use it in your (academic or not) research, please cite our NDSS'19 paper describing ICSREF:
-
-Anastasis Keliris, and Michail Maniatakos, "ICSREF: A Framework for Automated Reverse Engineering of Industrial Control Systems Binaries", in NDSS'19.
 
 
 Acknowledgements
