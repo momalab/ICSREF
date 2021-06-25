@@ -26,16 +26,6 @@ If you find our work interesting and use it in your (academic or not) research, 
 
 Anastasis Keliris, and Michail Maniatakos, "ICSREF: A Framework for Automated Reverse Engineering of Industrial Control Systems Binaries", in NDSS'19.
 
-Bibtex:
-+verbatim+
-@inproceedings{keliris2019icsref,
-  title={{ICSREF}: A Framework for Automated Reverse Engineering of Industrial Control Systems Binaries},
-  author={Keliris, A. and Maniatakos, M.},
-  booktitle={Network and Distributed System Security Symposium (NDSS)},
-  year={2019}
-}
--verbatim-
-
 Preview
 =======
 
