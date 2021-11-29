@@ -7,12 +7,13 @@ Install the system dependencies:
 
     sudo apt install git python-pip libcapstone3 python-dev libffi-dev build-essential virtualenvwrapper graphviz libgraphviz-dev graphviz-dev pkg-config
 
-Install radare2
+Install radare2 v3.1.3
 ---------------
 
 .. code-block:: none
-
-    git clone https://github.com/radare/radare2.git && cd radare2
+    
+    wget https://github.com/radareorg/radare2/archive/refs/tags/3.1.3.zip
+    unzip 3.1.3.zip && cd radare2-3.1.3
     ./sys/install.sh && cd ..
 
 Download the ICSREF repo
