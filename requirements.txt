@@ -1,7 +1,7 @@
 networkx==1.9
 r2pipe==0.9.5
 dill==0.2.7.1
-ujson==1.35
+ujson==5.2.0
 cmd2==0.7.9
 angr==7.7.9.14
 pygraphviz==1.3.1
