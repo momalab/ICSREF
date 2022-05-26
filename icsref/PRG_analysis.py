@@ -205,8 +205,8 @@ class Program():
             disasm_data = r2.cmd('pxr {} @{}'.format(length_data ,start_data))
             disasm_data = disasm_data.split('\n')
             # Disassembly formating
-            for i,line in enumerate(disasm_data):
-                disasm_data[i] = '            {}     {}      {}'.format(line[:11], line[14:23], line [14:])
+            for j,line in enumerate(disasm_data):
+                disasm_data[j] = '            {}     {}      {}'.format(line[:11], line[14:23], line [14:])
             disasm = disasm_code + disasm_data
             self.Functions.append(Function(self.path, start_code, stop_data, self.hexdump[start_code:stop_data], disasm))
         r2.quit()
