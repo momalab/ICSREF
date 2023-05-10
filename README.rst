@@ -112,9 +112,10 @@ The framework supports an interactive mode, where all the processing modules are
 Installation
 ============
 
-See INSTALL_
+For the latest installation instructions see INSTALL.md_. For the legacy installation instructions see here_.
 
-.. _INSTALL: INSTALL.rst
+.. _INSTALL.md: INSTALL.md
+.. _here: INSTALL.rst
 
 
 Documentation
