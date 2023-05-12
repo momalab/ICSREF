@@ -44,7 +44,7 @@ Create bash alias
 
 .. code-block:: none
 
-    echo -e "\n# ICSREF alias\nalias icsref='workon icsref && python `pwd`/icsref/icsref.py'\n" >> ~/.bash_aliases && source ~/.bashrc
+    echo -e "\n# ICSREF alias\nalias icsref='workon icsref && python `pwd`/ICSREF/icsref/icsref.py'\n" >> ~/.bash_aliases && source ~/.bashrc
 
 Run
 ---
